@@ -162,7 +162,7 @@ const CreateCustomerModal = ({ isOpen, onClose, onSuccess }) => {
         cancellation_reason: null,
       };
       const token = localStorage.getItem('accessToken');
-      const response = await ApiService.post('/subscriptions/', payload, {
+      const response = await ApiService.post('subscriptions/', payload, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (response?.success || response?.subscription) {

@@ -486,7 +486,7 @@ function SubscriptionsPage() {
   const fetchSubscriptions = async () => {
     setLoadingSubs(true);
     try {
-      const response = await ApiService.get('/subscriptions/', {
+      const response = await ApiService.get('subscriptions/', {
         headers: { 'Content-Type': 'application/json' },
       });
       // The backend now returns { subscriptions: [...], pagination: {...} }
@@ -502,7 +502,7 @@ function SubscriptionsPage() {
   const fetchPlans = async () => {
     setLoadingPlans(true);
     try {
-      const response = await ApiService.get('/plans/', {
+      const response = await ApiService.get('plans/', {
         headers: { 'Content-Type': 'application/json' },
       });
       const data = Array.isArray(response) ? response : response.plans || [];
@@ -539,7 +539,7 @@ function SubscriptionsPage() {
         type: 'subscription_expired',
         is_push: true
       };
-      await ApiService.post('/notifications/', payload);
+      await ApiService.post('notifications/', payload);
       alert('Notification sent successfully!');
     } catch (error) {
       console.error('Error sending notification:', error);
@@ -557,9 +557,9 @@ function SubscriptionsPage() {
   const handleCreateOrEditPlan = async (planData) => {
     try {
       if (editingPlan) {
-        await ApiService.put(`/plans/${editingPlan.id}`, planData);
+        await ApiService.put(`plans/${editingPlan.id}`, planData);
       } else {
-        await ApiService.post('/plans/', planData);
+        await ApiService.post('plans/', planData);
       }
       setIsModalOpen(false);
       setEditingPlan(null);

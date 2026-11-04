@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0A4D3C" />
+    <title>Delete Your Account — Aqua Credit</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html,
+        body {
+            height: 100%;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: linear-gradient(180deg, #0A4D3C 0%, #1B6B50 32%, #F8FAFC 32%);
+            color: #1E293B;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            padding: 24px 16px 48px;
+        }
+
+        .app {
+            width: 100%;
+            max-width: 460px;
+        }
+
+        /* ─── Header ─── */
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #fff;
+            margin-bottom: 20px;
+            padding-left: 4px;
+        }
+
+        .brand-logo {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.18);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.28);
+        }
+
+        .brand-text {
+            font-weight: 700;
+            font-size: 15px;
+            letter-spacing: 0.3px;
+        }
+
+        /* ─── Card ─── */
+        .card {
+            background: #FFFFFF;
+            border-radius: 20px;
+            padding: 28px 22px;
+            box-shadow: 0 8px 28px rgba(0, 0, 0, 0.08);
+            border: 1px solid #E2E8F0;
+        }
+
+        .screen {
+            display: none;
+        }
+
+        .screen.active {
+            display: block;
+            animation: fadeIn 0.25s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(6px);
+            }
+
+            to {
+                opacity: 1;
+                transform: none;
+            }
+        }
+
+        h1 {
+            font-size: 22px;
+            font-weight: 800;
+            color: #0A4D3C;
+            margin-bottom: 6px;
+        }
+
+        h2 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #0A4D3C;
+            margin-bottom: 6px;
+        }
+
+        .subtitle {
+            font-size: 13px;
+            color: #64748B;
+            margin-bottom: 22px;
+            line-height: 1.55;
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #334155;
+            margin-bottom: 8px;
+        }
+
+        input[type="tel"] {
+            width: 100%;
+            padding: 15px 16px;
+            font-size: 16px;
+            border: 1.5px solid #E2E8F0;
+            border-radius: 12px;
+            background: #F8FAFC;
+            color: #1E293B;
+            outline: none;
+            transition: border-color 0.2s, background 0.2s;
+            margin-bottom: 18px;
+            font-family: inherit;
+        }
+
+        input[type="tel"]:focus {
+            border-color: #0A4D3C;
+            background: #fff;
+        }
+
+        /* ─── Buttons ─── */
+        .btn {
+            width: 100%;
+            padding: 15px 16px;
+            font-size: 15px;
+            font-weight: 700;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: opacity 0.15s, transform 0.1s;
+            font-family: inherit;
+            color: #fff;
+            background: #0A4D3C;
+            letter-spacing: 0.2px;
+        }
+
+        .btn:active {
+            transform: scale(0.985);
+        }
+
+        .btn:hover:not(:disabled) {
+            opacity: 0.92;
+        }
+
+        .btn:disabled {
+            opacity: 0.65;
+            cursor: not-allowed;
+        }
+
+        .btn.danger {
+            background: #DC2626;
+        }
+
+        .btn.ghost {
+            background: transparent;
+            color: #0A4D3C;
+            border: 1.5px solid #CBD5E1;
+            margin-top: 10px;
+        }
+
+        .btn.ghost:hover {
+            background: #F8FAFC;
+        }
+
+        .btn .spinner {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+            vertical-align: -2px;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* ─── OTP ─── */
+        .otp-row {
+            display: flex;
+            gap: 8px;
+            justify-content: space-between;
+            margin-bottom: 18px;
+        }
+
+        .otp-digit {
+            flex: 1;
+            height: 56px;
+            text-align: center;
+            font-size: 22px;
+            font-weight: 700;
+            color: #0A4D3C;
+            border: 1.5px solid #E2E8F0;
+            border-radius: 12px;
+            background: #F8FAFC;
+            outline: none;
+            transition: border-color 0.15s, background 0.15s;
+            font-family: inherit;
+            padding: 0;
+        }
+
+        .otp-digit:focus {
+            border-color: #0A4D3C;
+            background: #fff;
+        }
+
+        .otp-digit:not(:placeholder-shown) {
+            background: #E8F5E9;
+            border-color: #0A4D3C;
+        }
+
+        .otp-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 18px;
+            font-size: 12px;
+            color: #64748B;
+        }
+
+        .otp-meta strong {
+            color: #0A4D3C;
+            font-weight: 700;
+        }
+
+        .link-btn {
+            background: none;
+            border: none;
+            color: #0A4D3C;
+            font-weight: 700;
+            font-size: 12px;
+            cursor: pointer;
+            font-family: inherit;
+            padding: 4px 0;
+        }
+
+        .link-btn:disabled {
+            color: #94A3B8;
+            cursor: not-allowed;
+        }
+
+        /* ─── Details ─── */
+        .detail-list {
+            background: #F8FAFC;
+            border: 1px solid #E2E8F0;
+            border-radius: 14px;
+            padding: 6px 16px;
+            margin-bottom: 20px;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #E2E8F0;
+            font-size: 14px;
+        }
+
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+
+        .detail-label {
+            color: #64748B;
+            font-weight: 500;
+        }
+
+        .detail-value {
+            color: #1E293B;
+            font-weight: 600;
+            text-align: right;
+            max-width: 60%;
+            word-break: break-word;
+        }
+
+        /* ─── Warning box ─── */
+        .warning {
+            background: #FEF2F2;
+            border: 1px solid #FECACA;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 18px;
+        }
+
+        .warning-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 700;
+            color: #B91C1C;
+            margin-bottom: 6px;
+            font-size: 14px;
+        }
+
+        .warning-title svg {
+            flex-shrink: 0;
+        }
+
+        .warning-body {
+            font-size: 13px;
+            color: #7F1D1D;
+            line-height: 1.55;
+        }
+
+        .warning-amount {
+            font-size: 20px;
+            font-weight: 800;
+            color: #B91C1C;
+            margin: 8px 0 6px;
+        }
+
+        /* ─── Info box ─── */
+        .info {
+            background: #EFF6FF;
+            border: 1px solid #BFDBFE;
+            border-radius: 12px;
+            padding: 14px 16px;
+            margin-bottom: 18px;
+            font-size: 12.5px;
+            color: #1E40AF;
+            line-height: 1.55;
+        }
+
+        .info strong {
+            font-weight: 700;
+        }
+
+        /* ─── Success ─── */
+        .success-icon {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            background: #E8F5E9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 18px;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* ─── Toast ─── */
+        .toast {
+            position: fixed;
+            left: 50%;
+            bottom: 24px;
+            transform: translateX(-50%) translateY(100px);
+            background: #1E293B;
+            color: #fff;
+            padding: 12px 18px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 500;
+            max-width: calc(100vw - 32px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+            opacity: 0;
+            transition: transform 0.3s, opacity 0.3s;
+            z-index: 9999;
+            pointer-events: none;
+            text-align: center;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .toast.error {
+            background: #B91C1C;
+        }
+
+        .toast.success {
+            background: #0A4D3C;
+        }
+
+        /* ─── Footer ─── */
+        .footer-note {
+            text-align: center;
+            font-size: 11.5px;
+            color: #94A3B8;
+            margin-top: 20px;
+            line-height: 1.6;
+            padding: 0 8px;
+        }
+
+        .footer-note a {
+            color: #0A4D3C;
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .footer-note a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 380px) {
+            .otp-digit {
+                height: 50px;
+                font-size: 20px;
+            }
+
+            .card {
+                padding: 22px 18px;
+            }
+
+            h1 {
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app">
+
+        <!-- Brand -->
+        <div class="brand">
+            <div class="brand-logo">AC</div>
+            <div class="brand-text">Aqua Credit</div>
+        </div>
+
+        <div class="card">
+
+            <!-- ═══════════════ SCREEN 1: MOBILE ═══════════════ -->
+            <section id="screen-mobile" class="screen active">
+                <h1>Delete Your Account</h1>
+                <p class="subtitle">
+                    Enter the mobile number registered with Aqua Credit. We'll send you a
+                    one-time password to verify it's really you.
+                </p>
+
+                <label for="mobile-input">Mobile Number</label>
+                <input id="mobile-input" type="tel" inputmode="numeric" autocomplete="tel" maxlength="15"
+                    placeholder="e.g. 9876543210" />
+
+                <button id="btn-send-otp" class="btn" onclick="sendOtp()">
+                    Send OTP
+                </button>
+
+                <p class="footer-note">
+                    By continuing, you agree to our
+                    <a href="/privacy" target="_blank" rel="noopener">Privacy Policy</a>
+                    and
+                    <a href="/terms" target="_blank" rel="noopener">Terms of Service</a>.
+                </p>
+            </section>
+
+            <!-- ═══════════════ SCREEN 2: OTP ═══════════════ -->
+            <section id="screen-otp" class="screen">
+                <h1>Verify OTP</h1>
+                <p class="subtitle">
+                    Enter the 6-digit code we sent to <strong id="otp-mobile-display">—</strong>.
+                </p>
+
+                <div class="otp-row" id="otp-row">
+                    <input class="otp-digit" type="tel" inputmode="numeric" maxlength="1" data-idx="0"
+                        placeholder="•" />
+                    <input class="otp-digit" type="tel" inputmode="numeric" maxlength="1" data-idx="1"
+                        placeholder="•" />
+                    <input class="otp-digit" type="tel" inputmode="numeric" maxlength="1" data-idx="2"
+                        placeholder="•" />
+                    <input class="otp-digit" type="tel" inputmode="numeric" maxlength="1" data-idx="3"
+                        placeholder="•" />
+                    <input class="otp-digit" type="tel" inputmode="numeric" maxlength="1" data-idx="4"
+                        placeholder="•" />
+                    <input class="otp-digit" type="tel" inputmode="numeric" maxlength="1" data-idx="5"
+                        placeholder="•" />
+                </div>
+
+                <div class="otp-meta">
+                    <span>Didn't receive it?</span>
+                    <button id="btn-resend" class="link-btn" onclick="resendOtp()" disabled>
+                        Resend in 30s
+                    </button>
+                </div>
+
+                <button id="btn-verify-otp" class="btn" onclick="verifyOtp()">Verify</button>
+                <button class="btn ghost" onclick="backToMobile()">Change number</button>
+            </section>
+
+            <!-- ═══════════════ SCREEN 3: DETAILS ═══════════════ -->
+            <section id="screen-details" class="screen">
+                <h1>Account Details</h1>
+                <p class="subtitle">
+                    Please review your account before proceeding.
+                </p>
+
+                <div class="detail-list">
+                    <div class="detail-row">
+                        <span class="detail-label">Name</span>
+                        <span class="detail-value" id="user-name">—</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Business</span>
+                        <span class="detail-value" id="user-business">—</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Mobile</span>
+                        <span class="detail-value" id="user-mobile">—</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Current Balance</span>
+                        <span class="detail-value" id="user-balance">₹0.00</span>
+                    </div>
+                </div>
+
+                <!-- DUE-WARNING -->
+                <div id="due-warning" class="warning hidden">
+                    <div class="warning-title">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path
+                                d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+                            <line x1="12" y1="9" x2="12" y2="13" />
+                            <line x1="12" y1="17" x2="12.01" y2="17" />
+                        </svg>
+                        Outstanding Balance Detected
+                    </div>
+                    <div class="warning-body">
+                        Your account has an unsettled balance that must be cleared before deletion.
+                        <div class="warning-amount" id="due-amount">₹0.00</div>
+                        Please settle all transactions with your customers and suppliers, then return
+                        to this page to request deletion.
+                    </div>
+                </div>
+
+                <!-- DELETE-SECTION -->
+                <div id="delete-section">
+                    <div class="info">
+                        <strong>What happens when you delete your account:</strong><br />
+                        • Your personal information (name, mobile, photo, address) will be removed.<br />
+                        • Your account will no longer be accessible.<br />
+                        • Anonymized transaction records may be retained for legal/accounting compliance
+                        as required by local law.
+                    </div>
+                    <button id="btn-delete" class="btn danger" onclick="requestDeletion()">
+                        Request Account Deletion
+                    </button>
+                </div>
+            </section>
+
+            <!-- ═══════════════ SCREEN 4: SUCCESS ═══════════════ -->
+            <section id="screen-success" class="screen">
+                <div class="success-icon">
+                    <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="#0A4D3C" stroke-width="3"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                </div>
+                <h2 style="text-align:center;">Request Received</h2>
+                <p class="subtitle" style="text-align:center; margin-top:8px;">
+                    Your account deletion request has been submitted successfully. Our team will
+                    process it within <strong style="color:#0A4D3C;">7 business days</strong>.
+                    You'll receive a confirmation on your registered mobile number.
+                </p>
+
+                <div class="info" style="margin-top: 20px;">
+                    <strong>Changed your mind?</strong><br />
+                    If you'd like to cancel the request, contact us at
+                    <a href="mailto:support@aquacredit.com"
+                        style="color:#0A4D3C; font-weight:600;">support@aquacredit.com</a>
+                    before the deletion is completed.
+                </div>
+            </section>
+
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast" class="toast"></div>
+
+    <script>
+        /* ═══════════════════════════════════════════════════════════════
+           CONFIG — change this to your real API base URL
+           ═══════════════════════════════════════════════════════════════ */
+        const API_BASE = 'https://api.aquacredit.in/9023/api';
+        //    const API_BASE = 'http://localhost:3000/9023/api';
+
+        /* ─── State ─── */
+        const state = {
+            mobile: '',
+            userId: null,
+            userData: null,
+            resendAt: 0,       // timestamp when resend becomes available
+            resendTimerId: null,
+        };
+
+        /* ─── Screens ─── */
+        const screens = {
+            mobile: document.getElementById('screen-mobile'),
+            otp: document.getElementById('screen-otp'),
+            details: document.getElementById('screen-details'),
+            success: document.getElementById('screen-success'),
+        };
+
+        function showScreen(name) {
+            Object.values(screens).forEach((s) => s.classList.remove('active'));
+            screens[name].classList.add('active');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        /* ─── Toast ─── */
+        let toastTimeout = null;
+        function toast(message, type = 'info', duration = 3200) {
+            const el = document.getElementById('toast');
+            el.textContent = message;
+            el.className = 'toast show ' + type;
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                el.classList.remove('show');
+            }, duration);
+        }
+
+        /* ─── Button loading helper ─── */
+        function setLoading(btnId, loading, idleText) {
+            const btn = document.getElementById(btnId);
+            if (!btn) return;
+            btn.disabled = loading;
+            if (loading) {
+                btn.innerHTML = '<span class="spinner"></span>' + (btn.dataset.loadingText || 'Please wait…');
+            } else {
+                btn.textContent = idleText;
+            }
+        }
+
+        /* ─── Safe JSON parse ─── */
+        async function readJson(res) {
+            const text = await res.text();
+            try { return text ? JSON.parse(text) : {}; }
+            catch { return { error: text || 'Unexpected server response' }; }
+        }
+
+        /* ═══════════════════════════════════════════════════════════════
+           STEP 1: SEND OTP
+           ═══════════════════════════════════════════════════════════════ */
+        async function sendOtp() {
+            const input = document.getElementById('mobile-input');
+            const mobile = input.value.trim();
+
+            if (!/^\d{10,15}$/.test(mobile)) {
+                toast('Please enter a valid 10–15 digit mobile number', 'error');
+                input.focus();
+                return;
+            }
+
+            setLoading('btn-send-otp', true);
+            try {
+                const res = await fetch(`${API_BASE}/otp/send`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ mobile }),
+                });
+                const data = await readJson(res);
+
+                if (!res.ok) throw new Error(data.error || 'Failed to send OTP');
+
+                state.mobile = mobile;
+                document.getElementById('otp-mobile-display').textContent = mobile;
+
+                // reset OTP inputs
+                document.querySelectorAll('.otp-digit').forEach((i) => (i.value = ''));
+
+                showScreen('otp');
+                toast('OTP sent successfully', 'success');
+
+                // focus first box
+                const first = document.querySelector('.otp-digit[data-idx="0"]');
+                if (first) setTimeout(() => first.focus(), 100);
+
+                startResendCooldown(30);
+            } catch (err) {
+                toast(err.message || 'Failed to send OTP', 'error');
+            } finally {
+                setLoading('btn-send-otp', false, 'Send OTP');
+            }
+        }
+
+        /* ─── Resend ─── */
+        function startResendCooldown(seconds) {
+            state.resendAt = Date.now() + seconds * 1000;
+            const btn = document.getElementById('btn-resend');
+            btn.disabled = true;
+
+            clearInterval(state.resendTimerId);
+            state.resendTimerId = setInterval(() => {
+                const remaining = Math.ceil((state.resendAt - Date.now()) / 1000);
+                if (remaining <= 0) {
+                    clearInterval(state.resendTimerId);
+                    btn.disabled = false;
+                    btn.textContent = 'Resend OTP';
+                } else {
+                    btn.textContent = `Resend in ${remaining}s`;
+                }
+            }, 500);
+        }
+
+        async function resendOtp() {
+            if (Date.now() < state.resendAt) return;
+
+            try {
+                const res = await fetch(`${API_BASE}/otp/send`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ mobile: state.mobile }),
+                });
+                const data = await readJson(res);
+                if (!res.ok) throw new Error(data.error || 'Failed to resend OTP');
+                toast('OTP resent successfully', 'success');
+                startResendCooldown(30);
+            } catch (err) {
+                toast(err.message || 'Failed to resend OTP', 'error');
+            }
+        }
+
+        /* ═══════════════════════════════════════════════════════════════
+           STEP 2: VERIFY OTP
+           ═══════════════════════════════════════════════════════════════ */
+        async function verifyOtp() {
+            const otp = Array.from(document.querySelectorAll('.otp-digit'))
+                .map((i) => i.value)
+                .join('');
+
+            if (otp.length !== 6 || !/^\d{6}$/.test(otp)) {
+                toast('Please enter the complete 6-digit OTP', 'error');
+                return;
+            }
+
+            setLoading('btn-verify-otp', true);
+            try {
+                const res = await fetch(`${API_BASE}/otp/verify`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ mobile: state.mobile, otp }),
+                });
+                const data = await readJson(res);
+
+                console.log("verified data::", data.user.id)
+                if (!res.ok) throw new Error(data.error || 'Invalid or expired OTP');
+                state.userId = data.user.id;
+
+                await loadUserDetails();
+            } catch (err) {
+                toast(err.message || 'OTP verification failed', 'error');
+            } finally {
+                setLoading('btn-verify-otp', false, 'Verify');
+            }
+        }
+
+        /* ─── Back button ─── */
+        function backToMobile() {
+            clearInterval(state.resendTimerId);
+            showScreen('mobile');
+        }
+
+        /* ═══════════════════════════════════════════════════════════════
+           STEP 3: LOAD & RENDER USER DETAILS
+           ═══════════════════════════════════════════════════════════════ */
+        async function loadUserDetails() {
+            try {
+                const res = await fetch(`${API_BASE}/user/${state.userId}`);
+                const user = await readJson(res);
+
+                if (!res.ok) throw new Error(user.error || 'Failed to load user details');
+
+                state.userData = user;
+                renderDetails();
+                showScreen('details');
+            } catch (err) {
+                toast(err.message || 'Failed to load user details', 'error');
+            }
+        }
+
+        function renderDetails() {
+            const user = state.userData;
+            const balance = Number(user.current_balance || 0);
+
+            // Populate fields
+            document.getElementById('user-name').textContent = user.name || user.nickName || '—';
+            document.getElementById('user-business').textContent = user.businessName || '—';
+            document.getElementById('user-mobile').textContent = user.mobile || '—';
+
+            const balanceEl = document.getElementById('user-balance');
+            balanceEl.textContent = `₹${Math.abs(balance).toFixed(2)}`;
+            balanceEl.style.color = balance !== 0 ? '#DC2626' : '#0A4D3C';
+
+            const dueWarningEl = document.getElementById('due-warning');
+            const deleteSection = document.getElementById('delete-section');
+
+            if (balance !== 0) {
+                // User has unsettled balance → block deletion
+                document.getElementById('due-amount').textContent =
+                    `₹${Math.abs(balance).toFixed(2)}`;
+
+                dueWarningEl.classList.remove('hidden');
+                deleteSection.classList.add('hidden');
+            } else {
+                dueWarningEl.classList.add('hidden');
+                deleteSection.classList.remove('hidden');
+            }
+        }
+
+        /* ═══════════════════════════════════════════════════════════════
+           STEP 4: REQUEST DELETION
+           ═══════════════════════════════════════════════════════════════ */
+        async function requestDeletion() {
+            const confirmed = window.confirm(
+                'Are you sure you want to request account deletion?\n\n' +
+                'This action cannot be undone once processed.'
+            );
+            if (!confirmed) return;
+
+            setLoading('btn-delete', true);
+            try {
+                const res = await fetch(`${API_BASE}/notification/deleteRequest`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        UserId: state.userId,
+                        userName: state.userData?.name || '',
+                    }),
+                });
+                const data = await readJson(res);
+
+                if (!res.ok) throw new Error(data.error || 'Failed to submit deletion request');
+
+                showScreen('success');
+            } catch (err) {
+                toast(err.message || 'Failed to submit deletion request', 'error');
+            } finally {
+                setLoading('btn-delete', false, 'Request Account Deletion');
+            }
+        }
+
+        /* ═══════════════════════════════════════════════════════════════
+           OTP INPUT AUTO-ADVANCE / BACKSPACE / PASTE
+           ═══════════════════════════════════════════════════════════════ */
+        (function wireOtpInputs() {
+            const inputs = Array.from(document.querySelectorAll('.otp-digit'));
+
+            inputs.forEach((input, idx) => {
+                // Digit input
+                input.addEventListener('input', (e) => {
+                    const val = e.target.value.replace(/\D/g, '').slice(-1);
+                    e.target.value = val;
+                    if (val && idx < inputs.length - 1) {
+                        inputs[idx + 1].focus();
+                    }
+                    // auto-submit when all filled
+                    if (inputs.every((i) => i.value)) {
+                        // small delay so last keystroke renders
+                        setTimeout(verifyOtp, 150);
+                    }
+                });
+
+                // Backspace
+                input.addEventListener('keydown', (e) => {
+                    if (e.key === 'Backspace' && !e.target.value && idx > 0) {
+                        inputs[idx - 1].focus();
+                    }
+                    if (e.key === 'ArrowLeft' && idx > 0) inputs[idx - 1].focus();
+                    if (e.key === 'ArrowRight' && idx < inputs.length - 1) inputs[idx + 1].focus();
+                });
+
+                // Paste
+                input.addEventListener('paste', (e) => {
+                    e.preventDefault();
+                    const pasted = (e.clipboardData || window.clipboardData)
+                        .getData('text')
+                        .replace(/\D/g, '')
+                        .slice(0, 6);
+                    if (!pasted) return;
+                    pasted.split('').forEach((ch, i) => {
+                        if (inputs[i]) inputs[i].value = ch;
+                    });
+                    const nextEmpty = inputs.findIndex((i) => !i.value);
+                    (nextEmpty >= 0 ? inputs[nextEmpty] : inputs[5]).focus();
+                    if (pasted.length === 6) setTimeout(verifyOtp, 150);
+                });
+
+                // Auto select on focus
+                input.addEventListener('focus', () => input.select());
+            });
+        })();
+
+        /* ─── Mobile input: allow only digits ─── */
+        document.getElementById('mobile-input').addEventListener('input', (e) => {
+            e.target.value = e.target.value.replace(/\D/g, '').slice(0, 15);
+        });
+
+        /* ─── Enter key shortcuts ─── */
+        document.getElementById('mobile-input').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') sendOtp();
+        });
+    </script>
+</body>
+
+</html>
