@@ -606,11 +606,22 @@
         const API_BASE = 'https://api.aquacredit.in/9023/api';
         //    const API_BASE = 'http://localhost:3000/9023/api';
 
+        // SMSLogin gateway config
+        const SMS = {
+            url: 'https://smslogin.co/v3/api.php',
+            username: 'SIKHISERVICES',
+            apikey: '4f841d38d93faea3a7c2',
+            senderid: 'SSSVLD',
+            templateid: '1777179387472140701',
+            expiryMin: 5,
+        };
         /* ─── State ─── */
         const state = {
             mobile: '',
             userId: null,
             userData: null,
+            otp:        null,          // ← kept in memory for local verification
+            otpExpiry:  0,
             resendAt: 0,       // timestamp when resend becomes available
             resendTimerId: null,
         };
@@ -639,6 +650,56 @@
             toastTimeout = setTimeout(() => {
                 el.classList.remove('show');
             }, duration);
+        }
+
+        async function sendOtpSms(mobile, otp) {
+            // Build the exact text of the SMS. The template on DLT is
+            //   "Your AQUA CREDIT account deletion OTP is {#var#}. Valid for {#var#} minutes. Never share this OTP.\r\n-SIKHI SERVICES"
+            // Both {#var#} placeholders are filled here with `otp` and `expiryMin`.
+            const message =
+                `Your AQUA CREDIT account deletion OTP is ${otp}. ` +
+                `Valid for ${SMS.expiryMin} minutes. Never share this OTP.\r\n` +
+                `-SIKHI SERVICES`;
+
+            // Build query string manually so `\r\n` is preserved properly
+            // and no accidental space→+ conversion messes with the template.
+            const qs =
+                `?username=${encodeURIComponent(SMS.username)}` +
+                `&apikey=${encodeURIComponent(SMS.apikey)}` +
+                `&mobile=${encodeURIComponent(mobile)}` +
+                `&senderid=${encodeURIComponent(SMS.senderid)}` +
+                `&message=${encodeURIComponent(message)}` +
+                `&templateid=${encodeURIComponent(SMS.templateid)}`;
+
+            // ⚠️ If SMSLogin has no CORS header, this fetch throws before
+            // the request leaves the browser. You'll see a CORS error in
+            // the console. In that case a proxy is required (ask me).
+            let res;
+            try {
+                res = await fetch(`${SMS.url}${qs}`, {
+                    method: 'GET',
+                    // Keep default credentials; we do NOT want cookies sent
+                    credentials: 'omit',
+                });
+            } catch (netErr) {
+                throw new Error(
+                    'Could not reach SMS gateway (CORS or network). ' +
+                    'Check DevTools console for details.'
+                );
+            }
+
+            const raw = (await res.text()).toLowerCase();
+
+            const failed =
+                !res.ok ||
+                /error|invalid|fail|insufficient|blocked|denied/.test(raw);
+
+            if (failed) {
+                console.error('SMS gateway response:', res.status, raw);
+                throw new Error('SMS gateway rejected the request. Please try again.');
+            }
+
+            return true;
         }
 
         /* ─── Button loading helper ─── */
@@ -675,15 +736,15 @@
 
             setLoading('btn-send-otp', true);
             try {
-                const res = await fetch(`${API_BASE}/otp/send`, {
+                const res = await fetch(`${API_BASE}/otp/send_userDelete`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ mobile }),
                 });
                 const data = await readJson(res);
-
+                const otp = data.otp;
                 if (!res.ok) throw new Error(data.error || 'Failed to send OTP');
-
+                sendOtpSms(mobile, otp)
                 state.mobile = mobile;
                 document.getElementById('otp-mobile-display').textContent = mobile;
 
@@ -728,12 +789,13 @@
             if (Date.now() < state.resendAt) return;
 
             try {
-                const res = await fetch(`${API_BASE}/otp/send`, {
+                const res = await fetch(`${API_BASE}/otp/send_userDelete`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ mobile: state.mobile }),
                 });
                 const data = await readJson(res);
+                sendOtpSms( state.mobile,data.otp)
                 if (!res.ok) throw new Error(data.error || 'Failed to resend OTP');
                 toast('OTP resent successfully', 'success');
                 startResendCooldown(30);
