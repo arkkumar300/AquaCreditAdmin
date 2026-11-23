@@ -1,10 +1,35 @@
 // employees page
 import React, { useState, useEffect } from 'react';
-import { 
-  Search, Plus, Eye, Edit, Trash2, UserX, UserCheck, 
-  User, Mail, Phone, X, Save, AlertCircle 
-} from 'lucide-react';
+import { Search, Plus, Eye, Edit, Trash2, UserX, UserCheck, User, Mail, Phone, X, Save, AlertCircle} from 'lucide-react';
 import ApiService from '../services/ApiService';
+
+// Permission options - must match the keys in the Admin model's permissions JSON
+const PERMISSION_OPTIONS = [
+  { key: 'customer', label: 'Customer' },
+  { key: 'supplier', label: 'Supplier' },
+  { key: 'transaction', label: 'Transaction' },
+  { key: 'subscription', label: 'Subscription' },
+  { key: 'employee', label: 'Employee' },
+];
+
+const DEFAULT_PERMISSIONS = {
+  customer: false,
+  supplier: false,
+  transaction: false,
+  subscription: false,
+  employee: false,
+};
+
+// Normalize permissions coming from API (handle null/missing/partial)
+const normalizePermissions = (perms) => {
+  const base = { ...DEFAULT_PERMISSIONS };
+  if (perms && typeof perms === 'object') {
+    PERMISSION_OPTIONS.forEach(({ key }) => {
+      base[key] = Boolean(perms[key]);
+    });
+  }
+  return base;
+};
 
 const EmployeesPage = () => {
   // State
@@ -26,6 +51,7 @@ const EmployeesPage = () => {
     email: '',
     mobile: '',
     password: '',
+    permissions: { ...DEFAULT_PERMISSIONS },
   });
   const [formError, setFormError] = useState('');
   const [formSuccess, setFormSuccess] = useState('');
@@ -77,9 +103,9 @@ const EmployeesPage = () => {
       setFilteredEmployees(
         employees.filter(
           (emp) =>
-            emp.name.toLowerCase().includes(term) ||
-            emp.email.toLowerCase().includes(term) ||
-            emp.mobile.includes(term)
+            (emp.name || '').toLowerCase().includes(term) ||
+            (emp.email || '').toLowerCase().includes(term) ||
+            (emp.mobile || '').includes(term)
         )
       );
     }
@@ -87,7 +113,13 @@ const EmployeesPage = () => {
 
   // Reset form
   const resetForm = () => {
-    setFormData({ name: '', email: '', mobile: '', password: '' });
+    setFormData({
+      name: '',
+      email: '',
+      mobile: '',
+      password: '',
+      permissions: { ...DEFAULT_PERMISSIONS },
+    });
     setFormError('');
     setFormSuccess('');
     setIsSubmitting(false);
@@ -98,6 +130,17 @@ const EmployeesPage = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  // Handle permission checkbox toggle
+  const handlePermissionChange = (key) => {
+    setFormData((prev) => ({
+      ...prev,
+      permissions: {
+        ...prev.permissions,
+        [key]: !prev.permissions[key],
+      },
+    }));
+  };
+
   // Add employee
   const handleAddEmployee = async (e) => {
     e.preventDefault();
@@ -105,7 +148,7 @@ const EmployeesPage = () => {
     setFormSuccess('');
     setIsSubmitting(true);
 
-    const { name, email, mobile, password } = formData;
+    const { name, email, mobile, password, permissions } = formData;
     if (!name || !email || !mobile || !password) {
       setFormError('All fields are required.');
       setIsSubmitting(false);
@@ -122,7 +165,7 @@ const EmployeesPage = () => {
 
       const response = await ApiService.post(
         'admin/employee',
-        { name, email, mobile, password },
+        { name, email, mobile, password, permissions },
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -157,7 +200,7 @@ const EmployeesPage = () => {
     setFormSuccess('');
     setIsSubmitting(true);
 
-    const { name, email, mobile } = formData;
+    const { name, email, mobile, permissions } = formData;
     if (!name || !email || !mobile) {
       setFormError('Name, email and mobile are required.');
       setIsSubmitting(false);
@@ -172,10 +215,9 @@ const EmployeesPage = () => {
         return;
       }
 
-      // Assuming PUT /employees/:id exists
       const response = await ApiService.put(
         `admin/${selectedEmployee.id}`,
-        { name, email, mobile },
+        { name, email, mobile, permissions },
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -278,10 +320,11 @@ const EmployeesPage = () => {
   const handleEdit = (employee) => {
     setSelectedEmployee(employee);
     setFormData({
-      name: employee.name,
-      email: employee.email,
-      mobile: employee.mobile,
+      name: employee.name || '',
+      email: employee.email || '',
+      mobile: employee.mobile || '',
       password: '', // not shown in edit
+      permissions: normalizePermissions(employee.permissions),
     });
     setFormError('');
     setFormSuccess('');
@@ -303,6 +346,31 @@ const EmployeesPage = () => {
     >
       {isActive ? 'Active' : 'Inactive'}
     </span>
+  );
+
+  // Reusable permissions checkbox group
+  const PermissionsField = () => (
+    <div>
+      <label className="block text-sm font-medium text-gray-700 mb-2">
+        Permissions
+      </label>
+      <div className="grid grid-cols-2 gap-2">
+        {PERMISSION_OPTIONS.map(({ key, label }) => (
+          <label
+            key={key}
+            className="flex items-center space-x-2 px-3 py-2 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
+          >
+            <input
+              type="checkbox"
+              checked={!!formData.permissions[key]}
+              onChange={() => handlePermissionChange(key)}
+              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+            />
+            <span className="text-sm text-gray-700">{label}</span>
+          </label>
+        ))}
+      </div>
+    </div>
   );
 
   // Loading state
@@ -359,54 +427,52 @@ const EmployeesPage = () => {
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  ID
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Name
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Email
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Mobile
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
-                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mobile</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Permissions</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {filteredEmployees.length === 0 ? (
                 <tr>
-                  <td colSpan="6" className="px-6 py-4 text-center text-gray-500">
+                  <td colSpan="7" className="px-6 py-4 text-center text-gray-500">
                     No employees found.
                   </td>
                 </tr>
               ) : (
                 filteredEmployees.map((employee) => (
                   <tr key={employee.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {employee.id}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {employee.name}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                      {employee.email}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                      {employee.mobile}
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{employee.id}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{employee.name}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{employee.email}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{employee.mobile}</td>
+                    <td className="px-6 py-4 text-sm text-gray-600">
+                      <div className="flex flex-wrap gap-1">
+                        {PERMISSION_OPTIONS.map(({ key, label }) =>
+                          employee.permissions?.[key] ? (
+                            <span
+                              key={key}
+                              className="px-2 py-0.5 rounded-full text-xs bg-blue-100 text-blue-800"
+                            >
+                              {label}
+                            </span>
+                          ) : null
+                        )}
+                        {!employee.permissions ||
+                        Object.values(employee.permissions).every((v) => !v) ? (
+                          <span className="text-xs text-gray-400">None</span>
+                        ) : null}
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <StatusBadge isActive={employee.is_active} />
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex items-center justify-end space-x-2">
-                        {/* View */}
                         <button
                           onClick={() => handleView(employee)}
                           className="p-1 text-blue-600 hover:bg-blue-50 rounded transition-colors"
@@ -414,7 +480,6 @@ const EmployeesPage = () => {
                         >
                           <Eye className="h-4 w-4" />
                         </button>
-                        {/* Edit */}
                         <button
                           onClick={() => handleEdit(employee)}
                           className="p-1 text-yellow-600 hover:bg-yellow-50 rounded transition-colors"
@@ -422,7 +487,6 @@ const EmployeesPage = () => {
                         >
                           <Edit className="h-4 w-4" />
                         </button>
-                        {/* Deactivate */}
                         {employee.is_active ? (
                           <button
                             onClick={() => handleDeactivate(employee.id)}
@@ -433,14 +497,13 @@ const EmployeesPage = () => {
                           </button>
                         ) : (
                           <button
-                            onClick={() => handleDeactivate(employee.id)} // Could also reactivate, but route only deactivates
+                            onClick={() => handleDeactivate(employee.id)}
                             className="p-1 text-green-600 hover:bg-green-50 rounded transition-colors"
                             title="Activate (not implemented)"
                           >
                             <UserCheck className="h-4 w-4" />
                           </button>
                         )}
-                        {/* Delete */}
                         <button
                           onClick={() => handleDelete(employee.id)}
                           className="p-1 text-red-600 hover:bg-red-50 rounded transition-colors"
@@ -487,9 +550,7 @@ const EmployeesPage = () => {
                 </div>
               )}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Name
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
                 <input
                   type="text"
                   name="name"
@@ -500,9 +561,7 @@ const EmployeesPage = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Email
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
                 <input
                   type="email"
                   name="email"
@@ -513,9 +572,7 @@ const EmployeesPage = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Mobile
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Mobile</label>
                 <input
                   type="text"
                   name="mobile"
@@ -526,9 +583,7 @@ const EmployeesPage = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Password
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
                 <input
                   type="password"
                   name="password"
@@ -538,6 +593,10 @@ const EmployeesPage = () => {
                   required
                 />
               </div>
+
+              {/* Permissions checkboxes */}
+              <PermissionsField />
+
               <div className="flex justify-end space-x-3 pt-4">
                 <button
                   type="button"
@@ -596,6 +655,28 @@ const EmployeesPage = () => {
                   <User className="h-5 w-5 text-gray-400" />
                   <span>Role: {selectedEmployee.role || 'employee'}</span>
                 </div>
+
+                {/* Permissions display */}
+                <div className="pt-2 border-t border-gray-100">
+                  <p className="text-sm font-medium text-gray-700 mb-2">Permissions</p>
+                  <div className="flex flex-wrap gap-2">
+                    {PERMISSION_OPTIONS.map(({ key, label }) =>
+                      selectedEmployee.permissions?.[key] ? (
+                        <span
+                          key={key}
+                          className="px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800"
+                        >
+                          {label}
+                        </span>
+                      ) : null
+                    )}
+                    {!selectedEmployee.permissions ||
+                    Object.values(selectedEmployee.permissions).every((v) => !v) ? (
+                      <span className="text-xs text-gray-400">No permissions granted</span>
+                    ) : null}
+                  </div>
+                </div>
+
                 <div className="flex items-center space-x-3 text-gray-700 text-sm">
                   <span className="text-gray-500">Employee ID:</span>
                   <span>{selectedEmployee.id}</span>
@@ -640,9 +721,7 @@ const EmployeesPage = () => {
                 </div>
               )}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Name
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
                 <input
                   type="text"
                   name="name"
@@ -653,9 +732,7 @@ const EmployeesPage = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Email
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
                 <input
                   type="email"
                   name="email"
@@ -666,9 +743,7 @@ const EmployeesPage = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Mobile
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Mobile</label>
                 <input
                   type="text"
                   name="mobile"
@@ -678,6 +753,10 @@ const EmployeesPage = () => {
                   required
                 />
               </div>
+
+              {/* Permissions checkboxes */}
+              <PermissionsField />
+
               <div className="flex justify-end space-x-3 pt-4">
                 <button
                   type="button"

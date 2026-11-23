@@ -4,17 +4,17 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import {LayoutDashboard,Users,GroupIcon,Building2,UserCheck,CreditCard,Package,BarChart3,Bell,Settings,LogOut,Menu,X,Shield,FileCheck,Crown,UserCircle,User2} from 'lucide-react';
 
-// Define allowed roles for each navigation item
+// Define allowed roles + permission key for each navigation item
 const navItems = [
-  { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard, roles: ['super_admin', 'admin', 'employee'] },
-  { name: 'User Management', path: '/users', icon: Users, roles: ['super_admin', 'admin'] },
-  { name: 'Employee', path: '/employee', icon: GroupIcon, roles: ['super_admin'] },
-  { name: 'Customer', path: '/customers', icon: UserCheck, roles: ['super_admin', 'admin', 'employee'] },
-  { name: 'Supplier', path: '/suppliers', icon: UserCircle, roles: ['super_admin', 'admin', 'employee'] },
-  { name: 'Transactions', path: '/transactions', icon: CreditCard, roles: ['super_admin', 'admin', 'employee'] },
-  { name: 'KYC Verification', path: '/kyc', icon: FileCheck, roles: ['super_admin', 'employee'] },
-  { name: 'Subscriptions', path: '/subscriptions', icon: Crown, roles: ['super_admin', 'admin'] },
-  { name: 'Settings', path: '/settings', icon: Settings, roles: ['super_admin', 'admin'] },
+  { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard, roles: ['super_admin', 'admin', 'employee'], permission: null },
+  { name: 'User Management', path: '/users', icon: Users, roles: ['super_admin', 'admin'], permission: null },
+  { name: 'Employee', path: '/employee', icon: GroupIcon, roles: ['super_admin'], permission: null },
+  { name: 'Customer', path: '/customers', icon: UserCheck, roles: ['super_admin', 'admin', 'employee'], permission: 'customer' },
+  { name: 'Supplier', path: '/suppliers', icon: UserCircle, roles: ['super_admin', 'admin', 'employee'], permission: 'supplier' },
+  { name: 'Subscription Payment', path: '/transactions', icon: CreditCard, roles: ['super_admin', 'admin', 'employee'], permission: 'transaction' },
+  { name: 'KYC Verification', path: '/kyc', icon: FileCheck, roles: ['super_admin', 'employee'], permission: null },
+  { name: 'Subscriptions', path: '/subscriptions', icon: Crown, roles: ['super_admin', 'admin'], permission: 'subscription' },
+  { name: 'Settings', path: '/settings', icon: Settings, roles: ['super_admin', 'admin'], permission: null },
 ];
 
 function Layout({ children }) {
@@ -23,11 +23,25 @@ function Layout({ children }) {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Filter navigation items based on user role
+  // Filter navigation items based on user role and (for employees) permissions
   const filteredNavItems = useMemo(() => {
-    if (!user) return []; // or return a default set
-    const userRole = user.role; // e.g., 'super_admin', 'admin', 'employee'
-    return navItems.filter(item => item.roles.includes(userRole));
+    if (!user) return [];
+
+    const userRole = user.role; // 'super_admin' | 'admin' | 'employee'
+
+    // Non-employee roles: show all items allowed for their role
+    if (userRole !== 'employee') {
+      return navItems.filter((item) => item.roles.includes(userRole));
+    }
+
+    // Employee: filter by role AND permissions
+    const permissions = user.permissions || {};
+    return navItems.filter((item) => {
+      if (!item.roles.includes('employee')) return false;
+      // Items without a permission key (e.g., Dashboard, KYC) are always visible to employees
+      if (!item.permission) return true;
+      return Boolean(permissions[item.permission]);
+    });
   }, [user]);
 
   const handleLogout = () => {
