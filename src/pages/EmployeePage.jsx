@@ -12,12 +12,69 @@ const PERMISSION_OPTIONS = [
   { key: 'employee', label: 'Employee' },
 ];
 
+export const PERMISSIONS = [
+    { key: 'customer',     label: 'Customer' },
+    { key: 'supplier',     label: 'Supplier' },
+    { key: 'transaction',  label: 'Transaction' },
+    { key: 'subscription', label: 'Subscription' },
+    { key: 'employee',     label: 'Employee' },
+  ];
+  
+  // Safely parse the API string (or null) into an object of booleans
+  export const parsePermissions = (raw) => {
+    if (!raw) return {};
+    if (typeof raw === 'object') return raw;
+    try {
+      return JSON.parse(raw);
+    } catch {
+      return {};
+    }
+  };
+  
+  // Build the payload string the API expects
+  export const stringifyPermissions = (obj) => JSON.stringify(obj);
+  
 const DEFAULT_PERMISSIONS = {
   customer: false,
   supplier: false,
   transaction: false,
   subscription: false,
   employee: false,
+};
+const renderPermissions = (raw) => {
+  const perms = parsePermissions(raw);
+  const granted = PERMISSIONS.filter((p) => perms[p.key] === true);
+
+  if (!granted.length) {
+    return <span className="badge badge-gray">No permissions</span>;
+  }
+
+  return (
+    <div style={{display:'flex',flexWrap:'wrap',gap:'8px',alignItems:'center'}}>
+      {granted.map((p) => (
+        <span key={p.key} className="badge badge-green" style={{
+          borderColor: '#86efac',
+          transform: 'translateY(-1px)',
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '6px',
+          padding: '6px 12px',
+          borderRadius: '20px',
+          background: '#ecfdf3',
+          color: '#15803d',
+          border: '1px solid #bbf7d0',
+          fontSize: '12px',
+          fontWeight: 600,
+          lineHeight: 1.4,
+          transition: 'all 0.2s ease'
+        }}><i className="bi bi-check-circle-fill" style={{
+          fontSize: '11px',
+          color: '#16a34a'
+        }}></i>
+        {p.label}</span>
+      ))}
+    </div>
+  );
 };
 
 // Normalize permissions coming from API (handle null/missing/partial)
@@ -451,22 +508,7 @@ const EmployeesPage = () => {
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{employee.email}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{employee.mobile}</td>
                     <td className="px-6 py-4 text-sm text-gray-600">
-                      <div className="flex flex-wrap gap-1">
-                        {PERMISSION_OPTIONS.map(({ key, label }) =>
-                          employee.permissions?.[key] ? (
-                            <span
-                              key={key}
-                              className="px-2 py-0.5 rounded-full text-xs bg-blue-100 text-blue-800"
-                            >
-                              {label}
-                            </span>
-                          ) : null
-                        )}
-                        {!employee.permissions ||
-                        Object.values(employee.permissions).every((v) => !v) ? (
-                          <span className="text-xs text-gray-400">None</span>
-                        ) : null}
-                      </div>
+                      <div className="flex flex-wrap gap-1">{renderPermissions(employee.permissions)}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <StatusBadge isActive={employee.is_active} />

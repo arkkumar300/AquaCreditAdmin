@@ -76,8 +76,8 @@ localStorage.clear()
                   onChange={(e) => setUsername(e.target.value)}
                   className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/30 rounded-lg text-white placeholder-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200"
                   placeholder="Username"
-                  required
-                  autocomplete="current-user"
+                  required 
+                  autoComplete='"current-user"'
                 />
               </div>
 
@@ -92,7 +92,7 @@ localStorage.clear()
                   className="w-full pl-10 pr-12 py-3 bg-white/10 border border-white/30 rounded-lg text-white placeholder-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200"
                   placeholder="Password"
                   required
-                  autocomplete="current-password"
+                  autoComplete="current-password"
                 />
                 <button
                   type="button"
